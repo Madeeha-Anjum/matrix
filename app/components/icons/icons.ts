@@ -1,8 +1,11 @@
 import Cut from './Cut'
+import Paste from './Paste'
 import Rename from './Rename'
-import File from './file'
-import Folder from './folder'
-import Trash from './trash'
+import Upload from './Upload'
+import File from './File'
+import Folder from './Folder'
+import Trash from './Trash'
+import AddFolder from './AddFolder'
 
 const Icon = {
   File,
@@ -10,6 +13,9 @@ const Icon = {
   Cut,
   Trash,
   Rename,
+  Upload,
+  Paste,
+  AddFolder,
 }
 
 export default Icon
