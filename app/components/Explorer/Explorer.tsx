@@ -4,7 +4,7 @@ import ExplorerInode from './ExplorerInode'
 import { ExplorerContext } from '@/app/store/ExplorerContext'
 
 const Explorer: React.FC = () => {
-  const { inode, deleteInode, addFolder } = useContext(ExplorerContext)
+  const { inode, deleteInode, addFolder, addFile } = useContext(ExplorerContext)
 
   return (
     <section className='flex flex-col overflow-y-scroll bg-gray-900 overscroll-auto w-2/5 min-w-fit m-2'>
@@ -28,7 +28,7 @@ const Explorer: React.FC = () => {
       </main>
       <div className='mt-auto p-2 opacity-40'>
         <p className='text-sm text-center m-2'>Browse for a file to upload</p>
-        <div className='flex justify-center'>
+        <div className='flex justify-center' onClick={addFile}>
           <Icon.Upload className='w-6 h-6' />
         </div>
       </div>

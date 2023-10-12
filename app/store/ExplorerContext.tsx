@@ -12,6 +12,7 @@ type InterfaceExplorerContext = {
   deleteInode: () => void
   activePath: string | undefined
   addFolder: (name: string) => void
+  addFile: () => void
 }
 
 const ExplorerContext = createContext<InterfaceExplorerContext>(
@@ -115,6 +116,41 @@ const ExplorerProvider: React.FC<InterfaceExplorerProvider> = ({
     setActiveFileId(1)
   }
 
+  const makeNameUnique = (newInode: Inode, locationInode: Inode) => {
+    let count = 1
+    let uniqueName = newInode.name
+
+    while (locationInode.items?.find((item) => item.name === uniqueName)) {
+      // TODO: Account for the file extension
+      uniqueName = `${newInode.name} (${count})`
+      count += 1
+    }
+
+    return uniqueName
+  }
+
+  const createInode = (newInode: Inode) => {
+    const currentInode = getActiveInode(inode)
+    if (currentInode === null) return
+
+    // if the current inode is a folder, add the new folder to the items
+    if (currentInode.type === InodeType.folder) {
+      newInode.name = makeNameUnique(newInode, currentInode)
+      currentInode.items?.push(newInode)
+    } else {
+      // if the current inode is a file, add the new folder to the parent folder
+      const parent = getParentFolder(activeFileId, inode)
+      if (parent === null) return
+      if (parent.type === InodeType.folder) {
+        newInode.name = makeNameUnique(newInode, parent)
+        parent.items?.push(newInode)
+      }
+    }
+
+    setInode((prev) => ({ ...prev, ...inode }))
+    setActiveFileId(newInode.id)
+  }
+
   const addFolder = (name: string) => {
     const newFolder: Inode = {
       id: randomBytes(4).readUInt32BE(0),
@@ -122,40 +158,22 @@ const ExplorerProvider: React.FC<InterfaceExplorerProvider> = ({
       type: InodeType.folder,
       items: [],
     }
-    const currentInode = getActiveInode(inode)
-
-    if (currentInode === null) return
-    // if the current inode is a folder, add the new folder to the items
-    if (currentInode.type === InodeType.folder) {
-      let count = 1
-      while (
-        currentInode.items?.find((item) => item?.name === newFolder.name)
-      ) {
-        newFolder.name = `${name} (${count})`
-        count += 1
-      }
-      currentInode.items?.push(newFolder)
-    } else {
-      // if the current inode is a file, add the new folder to the parent folder
-      const parent = getParentFolder(activeFileId, inode)
-      if (parent === null) return
-      if (parent.type === InodeType.folder) {
-        let count = 1
-        while (parent.items?.find((item) => item.name === newFolder.name)) {
-          newFolder.name = `${name} (${count})`
-          count += 1
-        }
-        parent.items?.push(newFolder)
-      }
-    }
-
-    setInode((prev) => ({ ...prev, ...inode }))
-    setActiveFileId(newFolder.id)
+    createInode(newFolder)
   }
+
+  const addFile = () => {
+    const newFile: Inode = {
+      id: randomBytes(4).readUInt32BE(0),
+      name: 'New File',
+      type: InodeType.file,
+    }
+    createInode(newFile)
+  }
+
   // TODO: think about loading the initial data from local storage if there is a vault name in local storage
 
-  //  TODO: delete, upload, cut, paste  file,
-  //  -> note: if its vut it stays cut unless its pasted
+  //  TODO: upload, cut, paste
+  //  -> note: if its cut it stays cut unless its pasted
 
   return (
     <ExplorerContext.Provider
@@ -166,6 +184,7 @@ const ExplorerProvider: React.FC<InterfaceExplorerProvider> = ({
         setActiveFileId,
         deleteInode,
         addFolder,
+        addFile,
       }}
     >
       {children}
