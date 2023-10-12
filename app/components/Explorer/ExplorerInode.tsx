@@ -6,6 +6,7 @@ import classnames from 'classnames'
 import { ExplorerContext } from '@/app/store/ExplorerContext'
 
 const activeFileCss = 'bg-opacity-50 bg-white bg-opacity-10 rounded-md p-1'
+const cutQueCss = 'opacity-40 rounded-md p-1'
 
 type ExplorerInodeProps = {
   files: Inode[] | undefined
@@ -30,7 +31,15 @@ const Folder: React.FC<{ fileName: string }> = ({ fileName }) => {
 }
 
 const ExplorerInode: React.FC<ExplorerInodeProps> = ({ files }) => {
-  const { activeFileId, setActiveFileId } = useContext(ExplorerContext)
+  const { activeFileId, setActiveFileId, cutQueIds } =
+    useContext(ExplorerContext)
+
+  const isInCutQue = (id: number): boolean => {
+    if (cutQueIds.includes(id)) {
+      return true
+    }
+    return false
+  }
 
   return (
     <>
@@ -46,6 +55,7 @@ const ExplorerInode: React.FC<ExplorerInodeProps> = ({ files }) => {
                 }}
                 className={classnames('ml-2', {
                   [activeFileCss]: activeFileId === file.id,
+                  [cutQueCss]: isInCutQue(file.id),
                 })}
               >
                 <Folder fileName={file.name}></Folder>
@@ -60,6 +70,7 @@ const ExplorerInode: React.FC<ExplorerInodeProps> = ({ files }) => {
                 key={file.id}
                 className={classnames('ml-2', {
                   [activeFileCss]: activeFileId === file.id,
+                  [cutQueCss]: isInCutQue(file.id),
                 })}
                 onClick={(e) => {
                   e.stopPropagation()

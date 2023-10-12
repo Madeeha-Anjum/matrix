@@ -8,11 +8,14 @@ import { randomBytes } from 'crypto'
 type InterfaceExplorerContext = {
   inode: Inode
   activeFileId: number
+  cutQueIds: number[]
   setActiveFileId: (id: number) => void
   deleteInode: () => void
   activePath: string | undefined
   addFolder: (name: string) => void
   addFile: () => void
+  addToCutQue: () => void
+  pasteInParentFolder: () => void
 }
 
 const ExplorerContext = createContext<InterfaceExplorerContext>(
@@ -34,8 +37,8 @@ const ExplorerProvider: React.FC<InterfaceExplorerProvider> = ({
       items: [],
     }
   )
-
   const [activeFileId, setActiveFileId] = useState<number>(inode.id)
+  const [cutQueIds, setCutQue] = useState<number[]>([])
 
   const getParentFolder = (targetId: number, root: Inode): Inode => {
     const parent = root
@@ -55,19 +58,37 @@ const ExplorerProvider: React.FC<InterfaceExplorerProvider> = ({
     }
     return parent
   }
-  const getActiveInode = (root: Inode): Inode => {
-    const parent = getParentFolder(activeFileId, root)
-    if (parent.id == activeFileId) return parent
+  const getInode = (targetId: number, root: Inode): Inode => {
+    const parent = getParentFolder(targetId, root)
+    if (parent.id == targetId) return parent
 
     if (parent.type === InodeType.folder) {
-      const hasActiveFile = parent?.items?.find(
-        (item) => item.id == activeFileId
-      )
-      if (hasActiveFile) {
-        return hasActiveFile
+      const hasFile = parent?.items?.find((item) => item.id == targetId)
+      if (hasFile) {
+        return hasFile
       }
     }
     return parent
+  }
+
+  const haveSameParent = (id1: number, id2: number, root: Inode): boolean => {
+    const parent1 = getParentFolder(id1, root)
+    const parent2 = getParentFolder(id2, root)
+    if (parent1.id == parent2.id) return true
+    return false
+  }
+
+  const makeInodeNameUnique = (newInode: Inode, locationInode: Inode) => {
+    let count = 1
+    let uniqueName = newInode.name
+
+    while (locationInode.items?.find((item) => item.name === uniqueName)) {
+      // TODO: Account for the file extension
+      uniqueName = `${newInode.name} (${count})`
+      count += 1
+    }
+
+    return uniqueName
   }
 
   const findActivePath = (
@@ -116,33 +137,20 @@ const ExplorerProvider: React.FC<InterfaceExplorerProvider> = ({
     setActiveFileId(1)
   }
 
-  const makeNameUnique = (newInode: Inode, locationInode: Inode) => {
-    let count = 1
-    let uniqueName = newInode.name
-
-    while (locationInode.items?.find((item) => item.name === uniqueName)) {
-      // TODO: Account for the file extension
-      uniqueName = `${newInode.name} (${count})`
-      count += 1
-    }
-
-    return uniqueName
-  }
-
   const createInode = (newInode: Inode) => {
-    const currentInode = getActiveInode(inode)
+    const currentInode = getInode(activeFileId, inode)
     if (currentInode === null) return
 
     // if the current inode is a folder, add the new folder to the items
     if (currentInode.type === InodeType.folder) {
-      newInode.name = makeNameUnique(newInode, currentInode)
+      newInode.name = makeInodeNameUnique(newInode, currentInode)
       currentInode.items?.push(newInode)
     } else {
       // if the current inode is a file, add the new folder to the parent folder
       const parent = getParentFolder(activeFileId, inode)
       if (parent === null) return
       if (parent.type === InodeType.folder) {
-        newInode.name = makeNameUnique(newInode, parent)
+        newInode.name = makeInodeNameUnique(newInode, parent)
         parent.items?.push(newInode)
       }
     }
@@ -170,21 +178,90 @@ const ExplorerProvider: React.FC<InterfaceExplorerProvider> = ({
     createInode(newFile)
   }
 
-  // TODO: think about loading the initial data from local storage if there is a vault name in local storage
+  const addToCutQue = () => {
+    //  only add to cut que if its not already in the cut que
+    // if the que is empty add to the que else
+    //  only add to the que if its not already in the que
+    // only add to que if its a neighbor of the active file
+    if (activeFileId == 1) return
+    if (cutQueIds.includes(activeFileId)) return
 
-  //  TODO: upload, cut, paste
-  //  -> note: if its cut it stays cut unless its pasted
+    if (
+      cutQueIds.length > 0 &&
+      haveSameParent(activeFileId, cutQueIds[0], inode)
+    ) {
+      setCutQue((prev) => [...prev, activeFileId])
+      return
+    }
+
+    setCutQue([activeFileId])
+    return
+  }
+
+  const pasteToParentFolder = () => {
+    if (cutQueIds.length == 0) return
+
+    const pasteToParent = getParentFolder(activeFileId, inode)
+    const pasteFromParent = getParentFolder(cutQueIds[0], inode)
+    if (pasteToParent === null || pasteFromParent === null) return
+
+    // only paste if the paste location is not in the cut que
+    if (pasteFromParent.id == pasteToParent.id) {
+      setCutQue([])
+      return
+    }
+
+    const fromInodes = pasteFromParent.items?.filter((item) =>
+      cutQueIds.includes(item.id)
+    )
+    // remove fromInodes from the pasteFromParent
+    pasteFromParent.items = pasteFromParent.items?.filter(
+      (item) => !cutQueIds.includes(item.id)
+    )
+    // add fFromInodes to the pasteToParent
+    if (fromInodes === undefined) return
+    pasteToParent.items?.push(...fromInodes)
+
+    setInode((prev) => ({ ...prev, ...inode }))
+    setCutQue([])
+    // TODO: Add a toast for success/failure
+  }
+
+  // ======================= UP NEXT =======================
+  // TODO: File renaming
+  //  all files can be renames make a thing on the file and if clicked open a text box to rename the file(if possible)
+  // or pop up bubble to rename the file
+
+  // ======================= TODO =======================
+  // TODO: Load data from local storage (if there is any)
+  // TODO: Ask for name (maybe)
+  // --> note: toasts for success/failure
+  // TODO: add data to file model
+  // TODO: add uuid to objects
+  // TODO: upload UI
+  //  -> node: Add a file extension
+  //  -> note: toasts for success/failure of name conflict
+  // TODO: File renaming
+  // TODO: Save data to local storage
+  // --> note: toasts for success/failure
+  // TODO: QA and code review
+  // TODO: Deploy to production
+  // TODO: Add a README.md
+  // TOD0: Ask about Redux or is Context Api good enough?
 
   return (
     <ExplorerContext.Provider
       value={{
         inode,
         activeFileId,
+        cutQueIds,
         activePath: findActivePath(activeFileId, inode, '')?.slice(1),
         setActiveFileId,
         deleteInode,
         addFolder,
         addFile,
+        addToCutQue,
+        pasteInParentFolder: pasteToParentFolder,
       }}
     >
       {children}
