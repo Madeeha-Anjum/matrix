@@ -1,19 +1,22 @@
 'use client'
 import { createContext, useState } from 'react'
-import InodeData from '@/app/data/InodeData'
 import Inode from '@/app/models/Inode'
 import InodeType from '../models/InodeType'
 import { v4 as uuidv4 } from 'uuid'
-import useLocalStorage from '../hooks/useLocalStorage'
+import InodeData from '../data/InodeData'
 
 type InterfaceExplorerContext = {
   inode: Inode
   activeFileId: string
   activeInode: Inode
   cutQueIds: string[]
+  searchResults: Inode[]
+  activePath: string
+  getPathFromId: (id: string) => string
+  setSearchResults: (results: Inode[]) => void
   setActiveFileId: (id: string) => void
   deleteActiveInode: () => void
-  activePath: string | undefined
+  searchByName: (name: string) => Inode[]
   addFolder: (name: string) => void
   addFile: (name: string, data: string) => void
   renameInodeFromId: (newName: string, id: string) => void
@@ -32,13 +35,8 @@ type InterfaceExplorerProvider = {
 const ExplorerProvider: React.FC<InterfaceExplorerProvider> = ({
   children,
 }) => {
-  const [inode, setInode] = useLocalStorage<Inode>('vault', {
-    id: uuidv4(),
-    name: 'vault',
-    type: InodeType.folder,
-    items: [],
-  }) as [Inode, React.Dispatch<React.SetStateAction<Inode>>]
-
+  const [inode, setInode] = useState<Inode>(InodeData[0])
+  const [searchResults, setSearchResults] = useState<Inode[]>([])
   const rootId = inode.id
   const [activeFileId, setActiveFileId] = useState<string>(rootId)
   const [cutQueIds, setCutQue] = useState<string[]>([])
@@ -95,7 +93,7 @@ const ExplorerProvider: React.FC<InterfaceExplorerProvider> = ({
     return uniqueName
   }
 
-  const findActivePath = (
+  const findPathById = (
     id: string,
     root: Inode,
     currentPath: string
@@ -112,19 +110,24 @@ const ExplorerProvider: React.FC<InterfaceExplorerProvider> = ({
           return currentPath + `/${item.name}`
         }
         if (item.type == InodeType.folder) {
-          return findActivePath(id, item, currentPath)
+          return findPathById(id, item, currentPath)
         }
       }
     }
     return currentPath
   }
 
-  const deleteActiveInode = () => {
-    if (activeFileId == rootId) return
-    const parent = getParentFolder(activeFileId, inode)
+  const getPathFromId = (id: string): string => {
+    const path = findPathById(id, inode, '')?.slice(1) || ''
+    if (path === null) return ''
+    return path
+  }
+
+  const deleteInode = (id: string) => {
+    const parent = getParentFolder(id, inode)
     if (parent === null) return
     if (parent.type === InodeType.folder) {
-      parent.items = parent.items?.filter((item) => item.id != activeFileId)
+      parent.items = parent.items?.filter((item) => item.id != id)
     }
     setInode((prev) => ({ ...prev, ...inode }))
     setActiveFileId(rootId)
@@ -235,14 +238,37 @@ const ExplorerProvider: React.FC<InterfaceExplorerProvider> = ({
     setInode((prev) => ({ ...prev, ...inode }))
   }
 
-  // === UP NEXT ===
-  // TODO: Search panel
-  // --> note: search by name
-  // --> Build Ui and functionality
+  const searchByName = (name: string): Inode[] => {
+    const results: Inode[] = []
+
+    if (name == '') {
+      setSearchResults([])
+      return results
+    }
+
+    const filterInodesByName = (name: string, root: Inode): void => {
+      if (root.name.toLowerCase().startsWith(name.toLowerCase())) {
+        results.push(inode)
+      }
+      if (root.type === InodeType.folder && 'items' in root) {
+        root.items?.forEach((item) => {
+          if (item.name.toLowerCase().startsWith(name.toLowerCase())) {
+            results.push(item)
+          }
+          if (item.type == InodeType.folder) {
+            filterInodesByName(name, item)
+          }
+        })
+      }
+    }
+
+    filterInodesByName(name, inode)
+    setSearchResults(results)
+    return results
+  }
 
   // ======================= TODO =======================
   // TODO: Load data from local storage (if there is any)
-  // TODO: Ask for name (maybe)
   // --> note: toasts for success/failure
   // TODO: Save data to local storage
   // --> note: toasts for success/failure
@@ -257,10 +283,14 @@ const ExplorerProvider: React.FC<InterfaceExplorerProvider> = ({
         inode,
         activeFileId,
         cutQueIds,
-        activePath: findActivePath(activeFileId, inode, '')?.slice(1),
+        getPathFromId,
+        activePath: getPathFromId(activeFileId),
         activeInode: getInodeFromId(activeFileId, inode),
         setActiveFileId,
-        deleteActiveInode,
+        searchResults,
+        setSearchResults,
+        deleteActiveInode: () => deleteInode(activeFileId),
+        searchByName,
         addFolder,
         addFile,
         renameInodeFromId,

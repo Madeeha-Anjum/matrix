@@ -59,7 +59,6 @@ const Rename: React.FC<Props> = () => {
               <input
                 onChange={(e) => setNewName(e.target.value)}
                 value={newName}
-                id='new_name'
                 autoComplete='off'
                 className='border border-gray-400 rounded-md w-full'
               />
