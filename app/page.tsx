@@ -1,8 +1,8 @@
-import { redirect } from 'next/navigation'
-import React from 'react'
+import { redirect } from "next/navigation";
+import React from "react";
 
 const page: React.FC = () => {
-  redirect('/vault')
-}
+  redirect("/vault");
+};
 
-export default page
+export default page;

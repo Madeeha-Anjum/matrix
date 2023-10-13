@@ -1,81 +1,81 @@
-import React, { useContext, useState } from 'react'
-import Button from '@/app/components/ui/Button'
-import { ExplorerContext } from '@/app/store/ExplorerContext'
-import classnames from 'classnames'
+import React, { useContext, useState } from "react";
+import Button from "@/app/components/ui/Button";
+import { ExplorerContext } from "@/app/store/ExplorerContext";
+import classnames from "classnames";
 
-type Props = {}
-const searchCss = 'py-2 px-3 max-w-full w-96'
+type Props = {};
+const searchCss = "py-2 px-3 max-w-full w-96";
 
 const Search: React.FC<Props> = () => {
   const { setActiveFileId, searchResults, searchByName, getPathFromId } =
-    useContext(ExplorerContext)
-  const [searchValue, setSearchValue] = useState('')
+    useContext(ExplorerContext);
+  const [searchValue, setSearchValue] = useState("");
 
   return (
     <>
       <form
-        className='flex items-center justify-center space-x-2'
+        className="flex items-center justify-center space-x-2"
         onSubmit={(e) => {
-          e.preventDefault()
+          e.preventDefault();
           if (searchResults.length > 0) {
-            setActiveFileId(searchResults[0].id)
+            setActiveFileId(searchResults[0].id);
           }
-          setSearchValue('') // reset the input
-          searchByName('') // reset the search results
+          setSearchValue(""); // reset the input
+          searchByName(""); // reset the search results
         }}
       >
-        <div className='relative '>
+        <div className="relative ">
           <input
-            type='text'
+            type="text"
             value={searchValue}
             onChange={(e) => {
-              setSearchValue(e.target.value)
-              searchByName(e.target.value)
+              setSearchValue(e.target.value);
+              searchByName(e.target.value);
             }}
-            placeholder='Search files and folders by name'
+            placeholder="Search files and folders by name"
             className={classnames(
-              'rounded-md border border-gray-300 focus:outline-none focus:ring focus:ring-gray-800 backdrop-blur-lg bg-white/20 text-gray-300 ',
-              searchCss
+              "rounded-md border border-gray-300 bg-white/20 text-gray-300 backdrop-blur-lg focus:outline-none focus:ring focus:ring-gray-800 ",
+              searchCss,
             )}
           />
           <div
-            className={classnames('absolute top-full right-0', {
+            className={classnames("absolute right-0 top-full", {
               hidden: searchResults.length == 0,
             })}
           >
             <div
               className={classnames(
-                'border bg-purple-950/30 rounded-b-xl rounded-t-md backdrop-blur-lg backdrop-brightness-150',
-                searchCss
+                "rounded-b-xl rounded-t-md border bg-purple-950/30 backdrop-blur-lg backdrop-brightness-150",
+                searchCss,
               )}
             >
               {searchResults.map((result) => (
                 <div
-                  className=' hover:bg-white/30 rounded-md 
-                  w-full  cursor-pointer
-                  p-2 m-2'
+                  className=" m-2 w-full 
+                  cursor-pointer  rounded-md
+                  p-2 hover:bg-white/30"
                   key={result.id}
                   onClick={() => {
-                    setActiveFileId(result.id)
-                    setSearchValue('') // reset the input
-                    searchByName('') // reset the search results
+                    setActiveFileId(result.id);
+                    setSearchValue(""); // reset the input
+                    searchByName(""); // reset the search results
                   }}
                 >
-                  <div className='flex justify-between'>
+                  <div className="flex justify-between">
                     <p>{result.name}</p>
-                    <p className='opacity-50'>{getPathFromId(result.id)}</p>
+                    <p className="opacity-50">{getPathFromId(result.id)}</p>
                   </div>
                 </div>
               ))}
             </div>
           </div>
         </div>
-        <Button className='bg-purple-950/30' type='submit'>
+        <Button className="bg-purple-950/30" type="submit">
           Search
         </Button>
       </form>
     </>
-  )
-}
+  );
+};
 
-export default Search
+export default Search;

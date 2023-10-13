@@ -1,6 +1,6 @@
 enum InodeType {
-  file = 'file',
-  folder = 'folder',
+  file = "file",
+  folder = "folder",
 }
 
-export default InodeType
+export default InodeType;

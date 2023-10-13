@@ -1,31 +1,31 @@
-'use client'
-import React from 'react'
-import classnames from 'classnames'
+"use client";
+import React from "react";
+import classnames from "classnames";
 
 type Props = {
-  children?: React.ReactNode
-  className?: string
-  type?: 'button' | 'submit' | 'reset'
-  onClick?: (event: React.MouseEvent<HTMLButtonElement>) => void
-}
+  children?: React.ReactNode;
+  className?: string;
+  type?: "button" | "submit" | "reset";
+  onClick?: (event: React.MouseEvent<HTMLButtonElement>) => void;
+};
 const Click: React.FC<Props> = ({
   children,
-  className = '',
+  className = "",
   type,
   onClick,
 }) => {
   return (
     <button
       className={classnames(
-        'border-b-2 border  px-2 bg-blue-800/50 text-gray-300  rounded-md  h-full active:border-b active:scale-95',
-        className
+        "h-full rounded-md border  border-b-2  px-2  text-gray-300 transition-all duration-200 ease-in-out hover:bg-blue-800/25 active:scale-95 active:border-b  ",
+        className,
       )}
-      type={type || 'button'}
+      type={type || "button"}
       onClick={onClick}
     >
       {children}
     </button>
-  )
-}
+  );
+};
 
-export default Click
+export default Click;
