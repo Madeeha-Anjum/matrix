@@ -4,6 +4,7 @@ import Inode from "@/app/models/Inode";
 import InodeType from "../models/InodeType";
 import { v4 as uuidv4 } from "uuid";
 import InodeData from "../data/InodeData";
+import useLocalStorage from "../hooks/useLocalStorage";
 
 type InterfaceExplorerContext = {
   inode: Inode;
@@ -35,7 +36,7 @@ type InterfaceExplorerProvider = {
 const ExplorerProvider: React.FC<InterfaceExplorerProvider> = ({
   children,
 }) => {
-  const [inode, setInode] = useState<Inode>(InodeData[0]);
+  const [inode, setInode] = useLocalStorage<Inode>("random", InodeData[0]);
   const [searchResults, setSearchResults] = useState<Inode[]>([]);
   const rootId = inode.id;
   const [activeFileId, setActiveFileId] = useState<string>(rootId);
@@ -85,7 +86,6 @@ const ExplorerProvider: React.FC<InterfaceExplorerProvider> = ({
     let uniqueName = newInode.name;
 
     while (locationInode.items?.find((item) => item.name === uniqueName)) {
-      // TODO: Account for the file extension
       uniqueName = `${newInode.name} (${count})`;
       count += 1;
     }
@@ -199,6 +199,7 @@ const ExplorerProvider: React.FC<InterfaceExplorerProvider> = ({
     if (cutQueIds.length == 0) return;
 
     const moveToParent = getParentFolder(activeFileId, inode);
+
     const moveFromParent = getParentFolder(cutQueIds[0], inode);
     if (moveToParent === null || moveFromParent === null) return;
     // only paste if the paste location is not in the cut que
@@ -268,12 +269,8 @@ const ExplorerProvider: React.FC<InterfaceExplorerProvider> = ({
   };
 
   // ======================= TODO =======================
-  // TODO: Load data from local storage (if there is any)
-  // --> note: toasts for success/failure
-  // TODO: Save data to local storage
-  // --> note: toasts for success/failure
+  //  TODO: Add a toast for success/failure (for all actions)
   // TODO: QA and code review
-  // TODO: Deploy to production
   // TODO: Add a README.md
   // TOD0: Ask about Redux or is Context Api good enough?
 

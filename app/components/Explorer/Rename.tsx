@@ -38,7 +38,6 @@ const Rename: React.FC<Props> = () => {
         onClick={(e) => {
           e.stopPropagation();
           setIsModalOpen(!isModalOpen);
-          // focus the input
         }}
       />
       <div
@@ -58,7 +57,6 @@ const Rename: React.FC<Props> = () => {
                 />
               </label>
               <input
-                autoFocus
                 type="text"
                 onChange={(e) => setNewName(e.target.value)}
                 defaultValue={newName}
