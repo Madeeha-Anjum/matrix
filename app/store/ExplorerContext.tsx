@@ -64,7 +64,6 @@ const ExplorerProvider: React.FC<InterfaceExplorerProvider> = ({
   const getInodeFromId = (targetId: string, root: Inode): Inode => {
     if (targetId == inode.id) return root
 
-    console.log('Here is the target id: ', targetId)
     const parent = getParentFolder(targetId, root)
     if (parent.id == targetId) return parent
     if (parent.type === InodeType.folder) {
@@ -230,7 +229,6 @@ const ExplorerProvider: React.FC<InterfaceExplorerProvider> = ({
       (item) => !cutQueIds.includes(item.id)
     )
 
-    console.log('Here is the inode: ', inode)
     setInode((prev) => ({ ...prev, ...inode }))
     setCutQue([])
     // TODO: Add a toast for success/failure
@@ -249,7 +247,9 @@ const ExplorerProvider: React.FC<InterfaceExplorerProvider> = ({
   }
 
   // === UP NEXT ===
-  //   - display data in the file editor
+  // TODO: Search panel
+  // --> note: search by name
+  // --> Build Ui and functionality
 
   // ======================= TODO =======================
   // TODO: Load data from local storage (if there is any)
@@ -257,9 +257,6 @@ const ExplorerProvider: React.FC<InterfaceExplorerProvider> = ({
   // --> note: toasts for success/failure
   // TODO: Save data to local storage
   // --> note: toasts for success/failure
-  // TODO: Search panel
-  // --> note: search by name
-  // --> Build Ui and functionality
   // TODO: QA and code review
   // TODO: Deploy to production
   // TODO: Add a README.md

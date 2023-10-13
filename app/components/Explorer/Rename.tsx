@@ -41,7 +41,7 @@ const Rename: React.FC<Props> = () => {
       />
       <div
         className={classnames(
-          'bg-white border rounded-lg shadow-lg mt-2 right-0 p-1 m-2 absolute min-w-max min-h-full',
+          'bg-white border rounded-lg shadow-lg mt-2 left-0 p-1 m-2 absolute min-w-max min-h-full',
           { hidden: !isModalOpen }
         )}
       >

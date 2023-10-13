@@ -10,12 +10,14 @@ const Explorer: React.FC = () => {
   const { inode } = useContext(ExplorerContext)
 
   return (
-    <section className='flex flex-col overflow-y-scroll bg-gray-900 overscroll-auto w-2/5 min-w-fit m-2'>
+    <section className='flex flex-col bg-gray-900  min-w-fit w-1/5 m-2'>
       <ToolBar />
-      <main className='pr-2'>
-        <RootInode rootInode={inode} />
-        <ExplorerInode files={inode.items} />
-      </main>
+      <div className='flex-grow'>
+        <main className='p-2'>
+          <RootInode rootInode={inode} />
+          <ExplorerInode files={inode.items} />
+        </main>
+      </div>
       <div className='mt-auto p-2 opacity-40 cursor-pointer'>
         <Upload>
           <p className='text-sm text-center m-2'>Browse for a file to upload</p>
