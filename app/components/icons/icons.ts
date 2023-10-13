@@ -6,6 +6,7 @@ import File from './File'
 import Folder from './Folder'
 import Trash from './Trash'
 import AddFolder from './AddFolder'
+import Close from './Close'
 
 const Icon = {
   File,
@@ -16,6 +17,7 @@ const Icon = {
   Upload,
   Paste,
   AddFolder,
+  Close,
 }
 
 export default Icon

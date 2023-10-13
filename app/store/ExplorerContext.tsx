@@ -8,12 +8,14 @@ import { randomBytes } from 'crypto'
 type InterfaceExplorerContext = {
   inode: Inode
   activeFileId: number
+  activeInode: Inode
   cutQueIds: number[]
   setActiveFileId: (id: number) => void
   deleteInode: () => void
   activePath: string | undefined
   addFolder: (name: string) => void
   addFile: () => void
+  renameInodeFromId: (newName: string, id: number) => void
   addToCutQue: () => void
   pasteInParentFolder: () => void
 }
@@ -58,10 +60,11 @@ const ExplorerProvider: React.FC<InterfaceExplorerProvider> = ({
     }
     return parent
   }
-  const getInode = (targetId: number, root: Inode): Inode => {
+  const getInodeFromId = (targetId: number, root: Inode): Inode => {
+    if (root.id == targetId) return root
+
     const parent = getParentFolder(targetId, root)
     if (parent.id == targetId) return parent
-
     if (parent.type === InodeType.folder) {
       const hasFile = parent?.items?.find((item) => item.id == targetId)
       if (hasFile) {
@@ -138,7 +141,7 @@ const ExplorerProvider: React.FC<InterfaceExplorerProvider> = ({
   }
 
   const createInode = (newInode: Inode) => {
-    const currentInode = getInode(activeFileId, inode)
+    const currentInode = getInodeFromId(activeFileId, inode)
     if (currentInode === null) return
 
     // if the current inode is a folder, add the new folder to the items
@@ -227,10 +230,17 @@ const ExplorerProvider: React.FC<InterfaceExplorerProvider> = ({
     // TODO: Add a toast for success/failure
   }
 
-  // ======================= UP NEXT =======================
-  // TODO: File renaming
-  //  all files can be renames make a thing on the file and if clicked open a text box to rename the file(if possible)
-  // or pop up bubble to rename the file
+  const renameInodeFromId = (newName: string, id: number) => {
+    if (newName == '') return
+    if (id === null) return
+
+    const activeInode = getInodeFromId(id, inode)
+    if (activeInode === null) return
+
+    activeInode.name = newName
+
+    setInode((prev) => ({ ...prev, ...inode }))
+  }
 
   // ======================= TODO =======================
   // TODO: Load data from local storage (if there is any)
@@ -256,10 +266,12 @@ const ExplorerProvider: React.FC<InterfaceExplorerProvider> = ({
         activeFileId,
         cutQueIds,
         activePath: findActivePath(activeFileId, inode, '')?.slice(1),
+        activeInode: getInodeFromId(activeFileId, inode),
         setActiveFileId,
         deleteInode,
         addFolder,
         addFile,
+        renameInodeFromId,
         addToCutQue,
         pasteInParentFolder: pasteToParentFolder,
       }}
