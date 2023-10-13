@@ -1,7 +1,8 @@
 import classnames from 'classnames'
-import React, { use, useContext, useEffect, useState } from 'react'
-import Icon from '../icons/icons'
+import React, { useContext, useEffect, useState } from 'react'
+import Icon from '@/app/components/icons/icons'
 import { ExplorerContext } from '@/app/store/ExplorerContext'
+import Button from '@/app/components/ui/Button'
 
 type Props = {}
 
@@ -63,13 +64,9 @@ const Rename: React.FC<Props> = () => {
                 className='border border-gray-400 rounded-md w-full'
               />
             </div>
-
-            <button
-              className='bg-blue-600 w-full text-white rounded-md p-1 mt-2'
-              type='submit'
-            >
+            <Button className='bg-blue-800 p-1 mt-2' type='submit'>
               Rename
-            </button>
+            </Button>
           </form>
         </div>
       </div>
