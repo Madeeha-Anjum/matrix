@@ -4,6 +4,7 @@ import InodeData from '@/app/data/InodeData'
 import Inode from '@/app/models/Inode'
 import InodeType from '../models/InodeType'
 import { v4 as uuidv4 } from 'uuid'
+import useLocalStorage from '../hooks/useLocalStorage'
 
 type InterfaceExplorerContext = {
   inode: Inode
@@ -11,13 +12,13 @@ type InterfaceExplorerContext = {
   activeInode: Inode
   cutQueIds: string[]
   setActiveFileId: (id: string) => void
-  deleteInode: () => void
+  deleteActiveInode: () => void
   activePath: string | undefined
   addFolder: (name: string) => void
   addFile: (name: string, data: string) => void
   renameInodeFromId: (newName: string, id: string) => void
   addToCutQue: () => void
-  pasteInParentFolder: () => void
+  pasteToParentFolderOfActiveInode: () => void
 }
 
 const ExplorerContext = createContext<InterfaceExplorerContext>(
@@ -31,14 +32,13 @@ type InterfaceExplorerProvider = {
 const ExplorerProvider: React.FC<InterfaceExplorerProvider> = ({
   children,
 }) => {
-  const [inode, setInode] = useState<Inode>(
-    InodeData[0] || {
-      id: '1',
-      name: 'root',
-      type: InodeType.folder,
-      items: [],
-    }
-  )
+  const [inode, setInode] = useLocalStorage<Inode>('vault', {
+    id: uuidv4(),
+    name: 'vault',
+    type: InodeType.folder,
+    items: [],
+  }) as [Inode, React.Dispatch<React.SetStateAction<Inode>>]
+
   const rootId = inode.id
   const [activeFileId, setActiveFileId] = useState<string>(rootId)
   const [cutQueIds, setCutQue] = useState<string[]>([])
@@ -119,29 +119,18 @@ const ExplorerProvider: React.FC<InterfaceExplorerProvider> = ({
     return currentPath
   }
 
-  const deleteInode = () => {
-    const deleteActiveInode = (root: Inode): Inode => {
-      if (activeFileId == rootId) return root
-
-      if (root.type === InodeType.folder && 'items' in root) {
-        root.items = root?.items?.filter((item) => {
-          if (item.id == activeFileId) {
-            return false
-          }
-          if (item.type == InodeType.folder) {
-            return deleteActiveInode(item)
-          }
-          return true
-        })
-      }
-      return root
+  const deleteActiveInode = () => {
+    if (activeFileId == rootId) return
+    const parent = getParentFolder(activeFileId, inode)
+    if (parent === null) return
+    if (parent.type === InodeType.folder) {
+      parent.items = parent.items?.filter((item) => item.id != activeFileId)
     }
-    const newInode = deleteActiveInode(inode)
-    setInode((prev) => ({ ...prev, ...newInode }))
+    setInode((prev) => ({ ...prev, ...inode }))
     setActiveFileId(rootId)
   }
 
-  const createInode = (newInode: Inode) => {
+  const createInodeAtActiveInode = (newInode: Inode) => {
     const currentInode = getInodeFromId(activeFileId, inode)
     if (currentInode === null) return
 
@@ -170,7 +159,7 @@ const ExplorerProvider: React.FC<InterfaceExplorerProvider> = ({
       type: InodeType.folder,
       items: [],
     }
-    createInode(newFolder)
+    createInodeAtActiveInode(newFolder)
   }
 
   const addFile = (name: string, data: string) => {
@@ -180,7 +169,7 @@ const ExplorerProvider: React.FC<InterfaceExplorerProvider> = ({
       data,
       type: InodeType.file,
     }
-    createInode(newFile)
+    createInodeAtActiveInode(newFile)
   }
 
   const addToCutQue = () => {
@@ -203,7 +192,7 @@ const ExplorerProvider: React.FC<InterfaceExplorerProvider> = ({
     return
   }
 
-  const pasteToParentFolder = () => {
+  const pasteToParentFolderOfActiveInode = () => {
     if (cutQueIds.length == 0) return
 
     const moveToParent = getParentFolder(activeFileId, inode)
@@ -271,12 +260,12 @@ const ExplorerProvider: React.FC<InterfaceExplorerProvider> = ({
         activePath: findActivePath(activeFileId, inode, '')?.slice(1),
         activeInode: getInodeFromId(activeFileId, inode),
         setActiveFileId,
-        deleteInode,
+        deleteActiveInode,
         addFolder,
         addFile,
         renameInodeFromId,
         addToCutQue,
-        pasteInParentFolder: pasteToParentFolder,
+        pasteToParentFolderOfActiveInode,
       }}
     >
       {children}
