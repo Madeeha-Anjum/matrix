@@ -7,7 +7,7 @@ import Upload from "./Upload";
 import Icon from "../icons/icons";
 
 const Explorer: React.FC = () => {
-  const { inode } = useContext(ExplorerContext);
+  const { rootFolder: inode } = useContext(ExplorerContext);
 
   return (
     <section className="m-2 flex w-1/5  min-w-fit flex-col bg-gray-900">

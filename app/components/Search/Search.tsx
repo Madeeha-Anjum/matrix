@@ -24,7 +24,7 @@ const Search: React.FC<Props> = () => {
           searchByName(""); // reset the search results
         }}
       >
-        <div className="relative ">
+        <div className="relative">
           <input
             type="text"
             value={searchValue}
@@ -39,9 +39,13 @@ const Search: React.FC<Props> = () => {
             )}
           />
           <div
-            className={classnames("absolute right-0 top-full", {
-              hidden: searchResults.length == 0,
-            })}
+            className={classnames(
+              "opacity-full absolute right-0 translate-y-0 transition",
+              {
+                "animate-growDown origin-top": searchResults.length != 0,
+                "opacity-0": searchResults.length == 0,
+              },
+            )}
           >
             <div
               className={classnames(
