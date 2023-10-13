@@ -1,5 +1,5 @@
 import classnames from 'classnames'
-import React, { useContext, useEffect, useState } from 'react'
+import React, { use, useContext, useEffect, useState } from 'react'
 import Icon from '../icons/icons'
 import { ExplorerContext } from '@/app/store/ExplorerContext'
 
@@ -10,6 +10,10 @@ const Rename: React.FC<Props> = () => {
   const { activeInode, renameInodeFromId: renameInode } =
     useContext(ExplorerContext)
   const [newName, setNewName] = useState('')
+
+  useEffect(() => {
+    setNewName(activeInode.name)
+  }, [activeInode])
 
   // close the modal when clicking outside of it
   // prevent propagation of clicks inside the modal
@@ -22,10 +26,7 @@ const Rename: React.FC<Props> = () => {
   const rename = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault()
     setIsModalOpen(false)
-    // rename the inode
-    console.log('Here we should rename the inode')
-    console.log('Here ', activeInode)
-    renameInode(newName, activeInode.id)
+    renameInode(newName, activeInode.id) // rename the inode
     setNewName('') // reset the input
   }
 
@@ -45,22 +46,14 @@ const Rename: React.FC<Props> = () => {
         )}
       >
         <div onClick={(e) => e.stopPropagation()}>
-          <div className='flex justify-end'>
-            <Icon.Close
-              className='w-6 h-6 cursor-pointer'
-              onClick={() => setIsModalOpen(false)}
-            />
-          </div>
-
-          <form className='flex flex-col space-y-2' onSubmit={(e) => rename(e)}>
+          <form className='flex flex-col' onSubmit={(e) => rename(e)}>
             <div>
-              <h1 className='text-md'>Old Name</h1>
-              <p className='w-full'>{activeInode?.name} </p>
-            </div>
-
-            <div>
-              <label htmlFor='new_name'>
-                <h1 className='text-md'>New name</h1>
+              <label htmlFor='new_name' className='flex'>
+                <h1 className='text-md text-center font-semibold'>Rename</h1>
+                <Icon.Close
+                  className='w-6 h-6 cursor-pointer basis-1 '
+                  onClick={() => setIsModalOpen(false)}
+                />
               </label>
               <input
                 onChange={(e) => setNewName(e.target.value)}

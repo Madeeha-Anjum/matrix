@@ -34,7 +34,7 @@ const ExplorerInode: React.FC<ExplorerInodeProps> = ({ files }) => {
   const { activeFileId, setActiveFileId, cutQueIds } =
     useContext(ExplorerContext)
 
-  const isInCutQue = (id: number): boolean => {
+  const isInCutQue = (id: string): boolean => {
     if (cutQueIds.includes(id)) {
       return true
     }

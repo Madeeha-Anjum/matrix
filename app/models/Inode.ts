@@ -1,10 +1,11 @@
 import InodeType from './InodeType'
 
 interface Inode {
-  id: number
+  id: string
   name: string
   type: InodeType.folder | InodeType.file
   items?: Array<Inode>
+  data?: string
 }
 
 export default Inode

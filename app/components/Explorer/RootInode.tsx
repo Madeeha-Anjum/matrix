@@ -17,6 +17,7 @@ const RootInode: React.FC<Props> = ({ rootInode }) => {
   const { renameInodeFromId } = useContext(ExplorerContext)
   const [isVaultFocused, setIsVaultFocused] = useState(false)
   const [newName, setInputValue] = useState('')
+
   const inputRef = useRef() as MutableRefObject<HTMLInputElement>
 
   useEffect(() => {

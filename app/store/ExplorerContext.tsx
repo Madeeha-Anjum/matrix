@@ -3,19 +3,19 @@ import { createContext, useState } from 'react'
 import InodeData from '@/app/data/InodeData'
 import Inode from '@/app/models/Inode'
 import InodeType from '../models/InodeType'
-import { randomBytes } from 'crypto'
+import { v4 as uuidv4 } from 'uuid'
 
 type InterfaceExplorerContext = {
   inode: Inode
-  activeFileId: number
+  activeFileId: string
   activeInode: Inode
-  cutQueIds: number[]
-  setActiveFileId: (id: number) => void
+  cutQueIds: string[]
+  setActiveFileId: (id: string) => void
   deleteInode: () => void
   activePath: string | undefined
   addFolder: (name: string) => void
-  addFile: () => void
-  renameInodeFromId: (newName: string, id: number) => void
+  addFile: (name: string, data: string) => void
+  renameInodeFromId: (newName: string, id: string) => void
   addToCutQue: () => void
   pasteInParentFolder: () => void
 }
@@ -33,16 +33,17 @@ const ExplorerProvider: React.FC<InterfaceExplorerProvider> = ({
 }) => {
   const [inode, setInode] = useState<Inode>(
     InodeData[0] || {
-      id: 1,
+      id: '1',
       name: 'root',
       type: InodeType.folder,
       items: [],
     }
   )
-  const [activeFileId, setActiveFileId] = useState<number>(inode.id)
-  const [cutQueIds, setCutQue] = useState<number[]>([])
+  const rootId = inode.id
+  const [activeFileId, setActiveFileId] = useState<string>(rootId)
+  const [cutQueIds, setCutQue] = useState<string[]>([])
 
-  const getParentFolder = (targetId: number, root: Inode): Inode => {
+  const getParentFolder = (targetId: string, root: Inode): Inode => {
     const parent = root
     if (parent.items) {
       const hasActiveFile = parent.items.find((item) => item.id == targetId)
@@ -60,9 +61,10 @@ const ExplorerProvider: React.FC<InterfaceExplorerProvider> = ({
     }
     return parent
   }
-  const getInodeFromId = (targetId: number, root: Inode): Inode => {
-    if (root.id == targetId) return root
+  const getInodeFromId = (targetId: string, root: Inode): Inode => {
+    if (targetId == inode.id) return root
 
+    console.log('Here is the target id: ', targetId)
     const parent = getParentFolder(targetId, root)
     if (parent.id == targetId) return parent
     if (parent.type === InodeType.folder) {
@@ -74,7 +76,7 @@ const ExplorerProvider: React.FC<InterfaceExplorerProvider> = ({
     return parent
   }
 
-  const haveSameParent = (id1: number, id2: number, root: Inode): boolean => {
+  const haveSameParent = (id1: string, id2: string, root: Inode): boolean => {
     const parent1 = getParentFolder(id1, root)
     const parent2 = getParentFolder(id2, root)
     if (parent1.id == parent2.id) return true
@@ -95,7 +97,7 @@ const ExplorerProvider: React.FC<InterfaceExplorerProvider> = ({
   }
 
   const findActivePath = (
-    id: number,
+    id: string,
     root: Inode,
     currentPath: string
   ): string | null => {
@@ -120,7 +122,7 @@ const ExplorerProvider: React.FC<InterfaceExplorerProvider> = ({
 
   const deleteInode = () => {
     const deleteActiveInode = (root: Inode): Inode => {
-      if (activeFileId == 1) return root
+      if (activeFileId == rootId) return root
 
       if (root.type === InodeType.folder && 'items' in root) {
         root.items = root?.items?.filter((item) => {
@@ -137,7 +139,7 @@ const ExplorerProvider: React.FC<InterfaceExplorerProvider> = ({
     }
     const newInode = deleteActiveInode(inode)
     setInode((prev) => ({ ...prev, ...newInode }))
-    setActiveFileId(1)
+    setActiveFileId(rootId)
   }
 
   const createInode = (newInode: Inode) => {
@@ -164,7 +166,7 @@ const ExplorerProvider: React.FC<InterfaceExplorerProvider> = ({
 
   const addFolder = (name: string) => {
     const newFolder: Inode = {
-      id: randomBytes(4).readUInt32BE(0),
+      id: uuidv4(),
       name,
       type: InodeType.folder,
       items: [],
@@ -172,10 +174,11 @@ const ExplorerProvider: React.FC<InterfaceExplorerProvider> = ({
     createInode(newFolder)
   }
 
-  const addFile = () => {
+  const addFile = (name: string, data: string) => {
     const newFile: Inode = {
-      id: randomBytes(4).readUInt32BE(0),
-      name: 'New File',
+      id: uuidv4(),
+      name,
+      data,
       type: InodeType.file,
     }
     createInode(newFile)
@@ -186,7 +189,7 @@ const ExplorerProvider: React.FC<InterfaceExplorerProvider> = ({
     // if the que is empty add to the que else
     //  only add to the que if its not already in the que
     // only add to que if its a neighbor of the active file
-    if (activeFileId == 1) return
+    if (activeFileId == rootId) return
     if (cutQueIds.includes(activeFileId)) return
 
     if (
@@ -204,33 +207,36 @@ const ExplorerProvider: React.FC<InterfaceExplorerProvider> = ({
   const pasteToParentFolder = () => {
     if (cutQueIds.length == 0) return
 
-    const pasteToParent = getParentFolder(activeFileId, inode)
-    const pasteFromParent = getParentFolder(cutQueIds[0], inode)
-    if (pasteToParent === null || pasteFromParent === null) return
-
+    const moveToParent = getParentFolder(activeFileId, inode)
+    const moveFromParent = getParentFolder(cutQueIds[0], inode)
+    if (moveToParent === null || moveFromParent === null) return
     // only paste if the paste location is not in the cut que
-    if (pasteFromParent.id == pasteToParent.id) {
+    if (moveFromParent.id == moveToParent.id) {
       setCutQue([])
       return
     }
+    const copyInodes = cutQueIds.map((id) => getInodeFromId(id, inode))
 
-    const fromInodes = pasteFromParent.items?.filter((item) =>
-      cutQueIds.includes(item.id)
-    )
-    // remove fromInodes from the pasteFromParent
-    pasteFromParent.items = pasteFromParent.items?.filter(
+    //  make the names unique
+    copyInodes.forEach((inode) => {
+      inode.name = makeInodeNameUnique(inode, moveToParent)
+    })
+
+    // move "copyInodes" to "moveToParent"
+    moveToParent.items?.push(...copyInodes)
+
+    // remove "copyInodes" from "moveFromParent"
+    moveFromParent.items = moveFromParent.items?.filter(
       (item) => !cutQueIds.includes(item.id)
     )
-    // add fFromInodes to the pasteToParent
-    if (fromInodes === undefined) return
-    pasteToParent.items?.push(...fromInodes)
 
+    console.log('Here is the inode: ', inode)
     setInode((prev) => ({ ...prev, ...inode }))
     setCutQue([])
     // TODO: Add a toast for success/failure
   }
 
-  const renameInodeFromId = (newName: string, id: number) => {
+  const renameInodeFromId = (newName: string, id: string) => {
     if (newName == '') return
     if (id === null) return
 
@@ -242,18 +248,18 @@ const ExplorerProvider: React.FC<InterfaceExplorerProvider> = ({
     setInode((prev) => ({ ...prev, ...inode }))
   }
 
+  // === UP NEXT ===
+  //   - display data in the file editor
+
   // ======================= TODO =======================
   // TODO: Load data from local storage (if there is any)
   // TODO: Ask for name (maybe)
   // --> note: toasts for success/failure
-  // TODO: add data to file model
-  // TODO: add uuid to objects
-  // TODO: upload UI
-  //  -> node: Add a file extension
-  //  -> note: toasts for success/failure of name conflict
-  // TODO: File renaming
   // TODO: Save data to local storage
   // --> note: toasts for success/failure
+  // TODO: Search panel
+  // --> note: search by name
+  // --> Build Ui and functionality
   // TODO: QA and code review
   // TODO: Deploy to production
   // TODO: Add a README.md
