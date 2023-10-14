@@ -1,9 +1,9 @@
-import InodeType from "@/app/models/InodeType";
+import InodeType from "@/models/InodeType";
 import React, { useContext } from "react";
-import Icon from "@/app/components/icons/icons";
-import Inode from "@/app/models/Inode";
+import Icon from "@/components/icons/icons";
+import Inode from "@/models/Inode";
 import classnames from "classnames";
-import { ExplorerContext } from "@/app/store/ExplorerContext";
+import { ExplorerContext } from "@/store/ExplorerContext";
 
 const activeFileCss = "bg-opacity-50 bg-white bg-opacity-10 rounded-md p-1";
 const cutQueCss = "opacity-40 rounded-md p-1";

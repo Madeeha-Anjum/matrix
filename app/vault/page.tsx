@@ -1,8 +1,8 @@
 "use client";
 import React, { useContext } from "react";
-import Explorer from "@/app/components/Explorer/Explorer";
-import { ExplorerContext } from "@/app/store/ExplorerContext";
-import Search from "@/app/components/Search/Search";
+import Explorer from "@/components/Explorer/Explorer";
+import { ExplorerContext } from "@/store/ExplorerContext";
+import Search from "@/components/Search/Search";
 
 const Vault: React.FC = () => {
   const { activePath, activeInode, getInodeText } = useContext(ExplorerContext);

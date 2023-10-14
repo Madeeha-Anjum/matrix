@@ -1,7 +1,7 @@
 import "./globals.css";
 import type { Metadata } from "next";
 import { Inter } from "next/font/google";
-import { ExplorerProvider } from "@/app/store/ExplorerContext";
+import { ExplorerProvider } from "@/store/ExplorerContext";
 
 const inter = Inter({ subsets: ["latin"] });
 

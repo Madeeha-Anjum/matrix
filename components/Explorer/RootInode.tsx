@@ -6,8 +6,8 @@ import React, {
   useState,
 } from "react";
 import Icon from "../icons/icons";
-import Inode from "@/app/models/Inode";
-import { ExplorerContext } from "@/app/store/ExplorerContext";
+import Inode from "@/models/Inode";
+import { ExplorerContext } from "@/store/ExplorerContext";
 
 type Props = {
   rootInode: Inode;

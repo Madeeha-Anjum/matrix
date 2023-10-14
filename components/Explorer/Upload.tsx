@@ -1,4 +1,4 @@
-import { ExplorerContext } from "@/app/store/ExplorerContext";
+import { ExplorerContext } from "@/store/ExplorerContext";
 import React, { useContext, useRef } from "react";
 
 type Props = {

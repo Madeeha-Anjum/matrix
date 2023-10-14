@@ -1,6 +1,6 @@
 import React, { useContext, useEffect, useState } from "react";
-import Button from "@/app/components/ui/Button";
-import { ExplorerContext } from "@/app/store/ExplorerContext";
+import Button from "@/components/ui/Button";
+import { ExplorerContext } from "@/store/ExplorerContext";
 import classnames from "classnames";
 
 type Props = {};

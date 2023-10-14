@@ -1,6 +1,6 @@
 import React, { useContext } from "react";
 import ExplorerInode from "./ExplorerInode";
-import { ExplorerContext } from "@/app/store/ExplorerContext";
+import { ExplorerContext } from "@/store/ExplorerContext";
 import RootInode from "./RootInode";
 import ToolBar from "./ToolBar";
 import Upload from "./Upload";

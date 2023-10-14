@@ -1,6 +1,6 @@
 "use client";
 import { createContext, useState } from "react";
-import Inode from "@/app/models/Inode";
+import Inode from "@/models/Inode";
 import InodeType from "../models/InodeType";
 import { v4 as uuidv4 } from "uuid";
 import InodeData from "../data/InodeData";
