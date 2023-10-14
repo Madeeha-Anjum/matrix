@@ -1,4 +1,4 @@
-import React, { useContext, useState } from "react";
+import React, { useContext, useEffect, useState } from "react";
 import Button from "@/app/components/ui/Button";
 import { ExplorerContext } from "@/app/store/ExplorerContext";
 import classnames from "classnames";
@@ -10,6 +10,16 @@ const Search: React.FC<Props> = () => {
   const { setActiveFileId, searchResults, searchByName, getPathFromId } =
     useContext(ExplorerContext);
   const [searchValue, setSearchValue] = useState("");
+
+  // close the  modal when clicking outside of it
+  useEffect(() => {
+    const close = () => {
+      setSearchValue("");
+      searchByName("");
+    };
+    window.addEventListener("click", close);
+    return () => window.removeEventListener("click", close);
+  }, [searchByName]);
 
   return (
     <>
